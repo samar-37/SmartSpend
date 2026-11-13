@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>💰 Smart Expense Tracker</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">💰 Smart Expense Tracker</div>
+    <div class="top-actions">
+      <button id="toggleTheme" class="btn">🌙</button>
+      <button id="resetApp" class="btn-alt">🔄 Reset</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="grid-3">
+      <div class="card">
+        <h3>Add Transaction</h3>
+        <form id="transaction-form">
+          <input type="text" id="title" placeholder="Title / Description" required />
+          <input type="number" id="amount" placeholder="Amount" required />
+          <select id="type">
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+          <select id="category">
+            <option value="Food">🍕 Food</option>
+            <option value="Rent">🏠 Rent</option>
+            <option value="Travel">🚗 Travel</option>
+            <option value="Shopping">🛍️ Shopping</option>
+            <option value="Salary">💼 Salary</option>
+            <option value="Other">🧩 Other</option>
+          </select>
+          <input type="date" id="date" required />
+          <button type="submit" class="btn">Add Transaction</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h3>Statistics</h3>
+        <p><strong>Total Income:</strong> <span id="total-income">₹0</span></p>
+        <p><strong>Total Expense:</strong> <span id="total-expense">₹0</span></p>
+        <p><strong>Balance:</strong> <span id="balance">₹0</span></p>
+        <div class="progress-wrap">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Search & Filter</h3>
+        <input type="text" id="search" placeholder="Search transactions..." />
+        <select id="filter-type">
+          <option value="all">All</option>
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Charts & Analytics</h3>
+      <canvas id="pieChart"></canvas>
+      <canvas id="barChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h3>Transaction History</h3>
+      <ul id="transaction-list" class="tx-list"></ul>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>Made with ❤️ Atharv Dhage</p>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/charts.js"></script>
+  <script type="module" src="js/theme-colors.js"></script>
+</body>
+</html>

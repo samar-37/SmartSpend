@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Sign up — Smart Expense Tracker</title>
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+  <main class="auth-container">
+    <h2>Create Account</h2>
+    <form id="signupForm">
+      <label>Email <input id="email" type="email" required></label>
+      <label>Display name <input id="name" type="text" required></label>
+      <label>Password <input id="password" type="password" required minlength="6"></label>
+      <button type="submit" class="btn">Create account</button>
+    </form>
+    <p class="muted">Already have an account? <a href="login.html">Login</a></p>
+  </main>
+
+  <script type="module" src="js/auth.js"></script>
+</body>
+</html>

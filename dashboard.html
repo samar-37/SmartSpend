@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Dashboard — Smart Expense Tracker</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/charts.css">
+  <link rel="manifest" href="assets/manifest.json">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><img src="assets/logo.png" alt="logo" class="small-logo" onerror="this.style.display='none'"> Smart Expense Tracker</div>
+    <div class="top-actions">
+      <button id="toggleTheme" class="icon-btn">🌙</button>
+      <button id="resetAll" class="btn btn-alt">Reset</button>
+      <button id="logoutBtn" class="btn">Logout</button>
+    </div>
+  </header>
+
+  <div class="container grid-3">
+    <section class="card" id="formCard">
+      <h3>Add Transaction</h3>
+      <form id="transactionForm">
+        <input id="t_title" placeholder="Title" required>
+        <input id="t_amount" type="number" placeholder="Amount" required>
+        <select id="t_type">
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+        <select id="t_category"></select>
+        <input id="t_date" type="date" required>
+        <label class="inline"><input id="t_recurring" type="checkbox"> Recurring monthly</label>
+        <div style="display:flex;gap:8px">
+          <button class="btn" type="submit">Add</button>
+          <button id="exportCSV" type="button" class="btn btn-alt">Export CSV</button>
+          <input id="importFile" type="file" accept=".json,.csv" style="display:none">
+          <button id="importBtn" type="button" class="btn btn-alt">Import</button>
+        </div>
+      </form>
+
+      <hr>
+      <h4>Monthly Budget</h4>
+      <input id="monthlyBudget" type="number" placeholder="Monthly budget (₹)">
+      <div class="progress-wrap">
+        <div id="budgetProgress" class="progress-bar"></div>
+      </div>
+      <div class="budget-info">
+        <div>Used: <span id="budgetUsed">₹0</span></div>
+        <div>Remaining: <span id="budgetLeft">₹0</span></div>
+      </div>
+    </section>
+
+    <section class="card" id="chartsCard">
+      <h3>Analytics</h3>
+      <canvas id="pieChart"></canvas>
+      <canvas id="barChart"></canvas>
+    </section>
+
+    <section class="card" id="historyCard">
+      <h3>Transactions</h3>
+      <div class="filters-row">
+        <input id="search" placeholder="Search...">
+        <select id="filterType">
+          <option value="all">All</option>
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+      </div>
+      <ul id="txList" class="tx-list"></ul>
+    </section>
+  </div>
+
+  <footer class="footer">
+    <div>Made with ❤️ — frontend-only demo</div>
+    <div id="curUser" class="muted"></div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module" src="js/main.js"></script>
+  <script>
+    // register service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('assets/service-worker.js').catch(()=>{});
+    }
+  </script>
+</body>
+</html>

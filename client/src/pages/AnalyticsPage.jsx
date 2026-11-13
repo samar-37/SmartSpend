@@ -1,0 +1,40 @@
+import { useEffect, useState } from 'react';
+import {
+  Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
+} from 'recharts';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
+import LoadingSkeleton from '../components/ui/LoadingSkeleton';
+import { fetchCategories } from '../features/transactions/transactionService';
+import { fetchAnalytics } from '../features/analytics/analyticsService';
+
+const currency = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
+const colors = ['#4f46e5', '#06b6d4', '#f59e0b', '#ef4444', '#22c55e', '#8b5cf6', '#ec4899'];
+const currentYear = new Date().getUTCFullYear();
+const empty = { totals: { income: 0, expense: 0, savings: 0, savingsRate: 0, transactionCount: 0 }, monthly: [], categoryExpenses: [], topCategories: [], weekly: [], daily: [], highestExpenses: [], distribution: [], filters: {} };
+
+function money(value) { return currency.format(Number(value || 0)); }
+function tooltip(value) { return money(value); }
+
+export default function AnalyticsPage() {
+  const [filters, setFilters] = useState({ from: '', to: '', month: '', year: String(currentYear), category: '', type: '' });
+  const [analytics, setAnalytics] = useState(empty);
+  const [categories, setCategories] = useState([]);
+  const [state, setState] = useState('loading');
+  const [error, setError] = useState('');
+
+  async function load() {
+    try { setState('loading'); setError(''); setAnalytics(await fetchAnalytics(Object.fromEntries(Object.entries(filters).filter(([, value]) => value)))); setState('ready'); }
+    catch (requestError) { setError(requestError.response?.data?.message || 'Unable to load analytics.'); setState('error'); }
+  }
+  useEffect(() => { fetchCategories().then(setCategories).catch(() => setError('Unable to load categories.')); load(); }, []);
+  function update(name, value) { setFilters((current) => ({ ...current, [name]: value, ...(name === 'month' && value ? { year: '' } : {}), ...(name === 'year' && value ? { month: '' } : {}) })); }
+  return <div className="page-stack">
+    <div className="page-heading"><div><p className="eyebrow">INSIGHTS</p><h2>Advanced analytics</h2><p className="page-subtitle">Explore patterns from your recorded transactions.</p></div><Button onClick={load}>Refresh analytics</Button></div>
+    <Card><div className="analytics-filters"><label>From<input type="date" value={filters.from} onChange={(e) => update('from', e.target.value)} /></label><label>To<input type="date" value={filters.to} onChange={(e) => update('to', e.target.value)} /></label><label>Month<input type="month" value={filters.month} onChange={(e) => update('month', e.target.value)} /></label><label>Year<select value={filters.year} onChange={(e) => update('year', e.target.value)}><option value="">All years</option>{[currentYear, currentYear - 1, currentYear - 2, currentYear - 3].map((year) => <option key={year} value={year}>{year}</option>)}</select></label><label>Category<select value={filters.category} onChange={(e) => update('category', e.target.value)}><option value="">All categories</option>{categories.map((category) => <option key={category.id} value={category.name}>{category.name}</option>)}</select></label><label>Type<select value={filters.type} onChange={(e) => update('type', e.target.value)}><option value="">Income and expenses</option><option value="income">Income only</option><option value="expense">Expenses only</option></select></label><Button variant="ghost" onClick={() => { setFilters({ from: '', to: '', month: '', year: '' }); setTimeout(load, 0); }}>Clear filters</Button></div></Card>
+    {state === 'error' && <Card><p className="form-error" role="alert">{error}</p><Button variant="ghost" onClick={load}>Try again</Button></Card>}
+    {state === 'loading' ? <div className="summary-grid">{[1, 2, 3, 4].map((item) => <Card key={item}><LoadingSkeleton className="skeleton-large" /><LoadingSkeleton /></Card>)}</div> : <><div className="summary-grid">{[['Income', analytics.totals.income], ['Expenses', analytics.totals.expense], ['Savings', analytics.totals.savings], ['Savings rate', `${analytics.totals.savingsRate}%`]].map(([label, value]) => <Card key={label}><p className="card-label">{label}</p><p className="summary-amount">{typeof value === 'string' ? value : money(value)}</p><p className="card-hint">{analytics.totals.transactionCount} transactions in range</p></Card>)}</div>
+      <div className="chart-grid"><Card><div className="card-heading"><h3>Monthly income vs expenses</h3></div><div className="chart-box"><ResponsiveContainer><BarChart data={analytics.monthly}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="month" /><YAxis /><Tooltip formatter={tooltip} /><Bar dataKey="income" fill="#22c55e" name="Income" /><Bar dataKey="expense" fill="#ef4444" name="Expenses" /></BarChart></ResponsiveContainer></div></Card><Card><div className="card-heading"><h3>Month-over-month savings</h3></div><div className="chart-box"><ResponsiveContainer><LineChart data={analytics.monthly}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="month" /><YAxis /><Tooltip formatter={tooltip} /><Line type="monotone" dataKey="savings" stroke="#4f46e5" name="Savings" /></LineChart></ResponsiveContainer></div></Card><Card><div className="card-heading"><h3>Spending by category</h3></div><div className="chart-box">{analytics.categoryExpenses.length ? <ResponsiveContainer><PieChart><Pie data={analytics.categoryExpenses} dataKey="amount" nameKey="name" outerRadius={90} label>{analytics.categoryExpenses.map((entry, index) => <Cell key={entry.name} fill={colors[index % colors.length]} />)}</Pie><Tooltip formatter={tooltip} /></PieChart></ResponsiveContainer> : <div className="empty-state">No expense data for these filters.</div>}</div></Card><Card><div className="card-heading"><h3>Weekly spending trend</h3></div><div className="chart-box"><ResponsiveContainer><AreaChart data={analytics.weekly}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="week" /><YAxis /><Tooltip formatter={tooltip} /><Area type="monotone" dataKey="amount" stroke="#06b6d4" fill="#06b6d4" fillOpacity={0.2} name="Spending" /></AreaChart></ResponsiveContainer></div></Card><Card><div className="card-heading"><h3>Daily spending patterns</h3></div><div className="chart-box"><ResponsiveContainer><BarChart data={analytics.daily}><CartesianGrid strokeDasharray="3 3" stroke="var(--border)" /><XAxis dataKey="date" /><YAxis /><Tooltip formatter={tooltip} /><Bar dataKey="amount" fill="#8b5cf6" name="Spending" /></BarChart></ResponsiveContainer></div></Card><Card><div className="card-heading"><h3>Income and expense distribution</h3></div><div className="chart-box">{analytics.distribution.length ? <ResponsiveContainer><PieChart><Pie data={analytics.distribution} dataKey="amount" nameKey="type" outerRadius={90} label>{analytics.distribution.map((entry, index) => <Cell key={entry.type} fill={index ? '#ef4444' : '#22c55e'} />)}</Pie><Tooltip formatter={tooltip} /></PieChart></ResponsiveContainer> : <div className="empty-state">No distribution data.</div>}</div></Card></div>
+      <div className="analytics-lists"><Card><div className="card-heading"><h3>Top spending categories</h3></div>{analytics.topCategories.length ? analytics.topCategories.map((item) => <div className="analytics-row" key={item.name}><span>{item.name}</span><strong>{money(item.amount)}</strong></div>) : <div className="empty-state">No category spending.</div>}</Card><Card><div className="card-heading"><h3>Highest expenses</h3></div>{analytics.highestExpenses.length ? analytics.highestExpenses.map((item) => <div className="analytics-row" key={item.id}><span><strong>{item.title}</strong><small>{item.category} · {item.date}</small></span><strong>{money(item.amount)}</strong></div>) : <div className="empty-state">No expenses in this range.</div>}</Card></div></>}
+  </div>;
+}

@@ -1,0 +1,5 @@
+/* Toggle by adding class .dark on <body> */
+body.dark{background:#111;color:#ddd}
+body.dark .card, body.dark .topbar{background:#1c1c1c}
+body.dark input, body.dark select{background:#222;color:#ddd;border:1px solid #333}
+body.dark .btn-alt{border-color:#333}
